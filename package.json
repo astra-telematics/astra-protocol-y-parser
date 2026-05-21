@@ -1,0 +1,19 @@
+{
+  "name": "astra-protocol-y-parser",
+  "private": true,
+  "scripts": {
+    "compile": "rm -rf dist/lib && tsc && tsc --build tsconfig.es5.json",
+    "preparepackage": "rm dist/README.md && cp README.md dist/README.md"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "binutils64": "^0.1.2",
+    "crc": "^4.3.2",
+    "luhn": "^2.4.1",
+    "moment": "^2.30.1",
+    "moment-timezone": "^0.5.45"
+  }
+}
