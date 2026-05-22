@@ -23,4 +23,6 @@ jobs:
       - run: npm ci
       - run: npm run compile
       - run: npm run preparepackage
-      - run: npm publish  # Or: npm stage publish
+      - name: Publish to npm
+        working-directory: ./dist
+        run: npm publish  # Or: npm stage publish

@@ -1,13 +1,13 @@
 {
   "name": "astra-protocol-y-parser",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Astra Telematics Protocol Y parser",
   "repository": {
     "url": "https://github.com/astra-telematics/astra-protocol-y-parser"
   },
   "scripts": {
-    "compile": "rm -rf dist/lib && tsc && tsc --build tsconfig.es5.json",
-    "preparepackage": "rm -f dist/README.md && cp README.md dist/README.md"
+    "compile": "tsc && tsc --build tsconfig.es5.json",
+    "preparepackage": "rm -f dist/README.md && cp README.md dist/README.md && cp package.json dist/package.json"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",
