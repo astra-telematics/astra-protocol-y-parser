@@ -1,9 +1,9 @@
 {
   "name": "astra-protocol-y-parser",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "compile": "rm -rf dist/lib && tsc && tsc --build tsconfig.es5.json",
-    "preparepackage": "rm dist/README.md && cp README.md dist/README.md"
+    "preparepackage": "rm -f dist/README.md && cp README.md dist/README.md"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",
