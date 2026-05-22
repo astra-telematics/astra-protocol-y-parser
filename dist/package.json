@@ -1,0 +1,34 @@
+{
+    "name": "astra-protocol-y-parser",
+    "version": "1.0.4",
+    "description": "Astra Telematics Protocol Y parser",
+    "main": "lib/es5/index.js",
+    "module": "lib/es6/index.js",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/astra-telematics/astra-protocol-y-parser"
+    },
+    "files": [
+        "lib",
+        "README.md",
+        "package.json"
+    ],
+    "keywords": [
+      "astra",
+      "astra telematics",
+      "protocol y"
+    ],
+    "author": {
+      "name": "Astra Telematics",
+      "email": "development@astratelematics.com"
+    },
+    "license": "MIT",
+    "dependencies": {
+      "binutils64": "^0.1.2",
+      "crc": "^4.3.2",
+      "moment": "^2.30.1",
+      "moment-timezone": "^0.5.45",
+      "luhn": "^2.4.1"
+    }
+  }
+  
