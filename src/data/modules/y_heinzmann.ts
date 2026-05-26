@@ -6,14 +6,12 @@ export class ProtocolYHeinzmannData
     public batteryVoltageV?: number;
     public lifetimeOdometerM?: number;
     public canTimeS?: number;
-    public reserved?: Buffer;
 
     constructor (
         batterySocPercent: number,
         batteryVoltageV: number,
         lifetimeOdometerM: number,
         canTimeS: number,
-        reserved: Buffer
 
     )
     {
@@ -21,6 +19,5 @@ export class ProtocolYHeinzmannData
         this.batteryVoltageV = batteryVoltageV;
         this.lifetimeOdometerM = lifetimeOdometerM;
         this.canTimeS = canTimeS;
-        this.reserved = reserved;
     }
 }

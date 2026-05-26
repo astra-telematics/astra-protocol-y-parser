@@ -14,7 +14,7 @@ export class ProtocolYPacket
     public mode4Imei?: string;
     public reports: ProtocolYReport[] = [];
 
-    static fromData (data: Buffer, enableMode4:boolean = false, loginData?: ProtocolYLoginData): ProtocolYPacket | null
+    static fromData (data: Buffer, loginData?: ProtocolYLoginData): ProtocolYPacket | null
     {
         let packet = new ProtocolYPacket();
         let reader = new binutils.BinaryReader(data);
@@ -27,49 +27,6 @@ export class ProtocolYPacket
             packet.length = reader.ReadUInt16();
             // number of reports
             let numReports = reader.ReadUInt8();
-
-            if (enableMode4)
-            {
-                let isMode4 = false;
-
-                // look for a valid imei and run sanity checks to determine mode 4/6
-                let tacFac = data.readUint32BE(4);
-                let msnCd = data.readUint8(8);
-                msnCd <<= 8;
-                msnCd |= data.readUint8(9);
-                msnCd <<= 8;
-                msnCd |= data.readUint8(10);
-                
-                let mode4Imei = tacFac.toString().padEnd(8, '0')+msnCd.toString().padStart(7, '0');
-    
-                if (luhn.validate(mode4Imei) && mode4Imei.length === 15)
-                {
-                    // this could be a $MODE,4 packet, lets do some extra sanity checks to be certain
-                    isMode4 = true;
-    
-                    // make a new reader
-                    let mode4CheckReader = new binutils.BinaryReader(data);
-                    // skip to first report assuming $MODE,4
-                    mode4CheckReader.ReadBytes(11);
-                    // sequence number
-                    mode4CheckReader.ReadBytes(1);
-                    // module mask
-                    mode4CheckReader.ReadBytes(10);
-                    // rtc time
-                    let julianSecs = mode4CheckReader.ReadUInt32();
-                    let rtcTime = moment.tz('1980-01-06T00:00:00', 'UTC').add(julianSecs, 'seconds');
-    
-                    // check rtc time validity
-                    isMode4 = rtcTime.isBefore(moment.utc().add(24, 'hours'));
-                }
-    
-                if (isMode4)
-                {
-                    // this is a $MODE,4 packet, store imei in the packet and skip the bytes
-                    packet.mode4Imei = mode4Imei;
-                    reader.ReadBytes(7);
-                }
-            }
 
             // confirm packet length
             if (packet.length === data.length)

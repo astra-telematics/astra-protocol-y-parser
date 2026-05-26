@@ -58,7 +58,7 @@ export class ProtocolYParser
         }
         else
         {
-            this.packet = ProtocolYPacket.fromData(this.data, this.options.enableMode4, this.options.loginData);
+            this.packet = ProtocolYPacket.fromData(this.data, this.options.loginData);
         }
     }
 }
