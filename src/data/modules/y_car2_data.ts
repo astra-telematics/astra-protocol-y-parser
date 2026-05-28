@@ -11,7 +11,6 @@ export class ProtocolYCar2Data
     public status: number;
     public faults: number;
     public canEventDateTime?: moment.Moment;
-    public reserved?: Buffer;
 
     constructor (
         batterySocRaw: number,

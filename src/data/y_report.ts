@@ -1015,7 +1015,6 @@ export class ProtocolYReport
             let julianSecs = moduleReader.ReadUInt32();
             let timestamp = moment.utc('1980-01-06T00:00:00').add(julianSecs, 'seconds');
             report.car2Data.canEventDateTime = timestamp;
-            report.car2Data.reserved = moduleReader.ReadBytes(8);
         }
 
         // HGV TRAILER DATA
@@ -1029,7 +1028,7 @@ export class ProtocolYReport
 
             const rawFlags = moduleReader.ReadUInt8();
 
-            const totalAxleLoadKg = moduleReader.ReadUInt16() / 2;
+            const totalAxleLoadKg = moduleReader.ReadUInt16() * 2;
             const wheelBasedSpeedKph = moduleReader.ReadUInt16() / 256;
             const roadAngleDeg = moduleReader.ReadUInt8() / 10;
             const brakeDemandPressureKpa = moduleReader.ReadUInt16() / 52;
