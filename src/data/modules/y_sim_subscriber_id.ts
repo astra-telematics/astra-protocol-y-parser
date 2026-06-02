@@ -2,10 +2,10 @@ export class ProtocolYSimSubscriberId
 {
     static mask: bigint = BigInt(1) << BigInt(26);
 
-    public imsi: Buffer;
+    public imsi: string;
 
     constructor (
-        imsi: Buffer
+        imsi: string
     )
     {
         this.imsi = imsi;
