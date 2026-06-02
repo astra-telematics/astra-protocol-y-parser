@@ -603,7 +603,7 @@ export class ProtocolYReport
         {
             const moduleReader = readModuleReader(reader, 1);
             report.simSubscriberId = new ProtocolYSimSubscriberId(
-                moduleReader.ReadBytes(7)
+                BigInt(`0x${moduleReader.ReadBytes(7).toString('hex')}`).toString()
             )
         }
 
