@@ -1044,14 +1044,23 @@ export class ProtocolYReport
                 const tyrePressureBar = moduleReader.ReadUInt8() * 0.1;
                 const brakeTemperatureDegC = moduleReader.ReadUInt8() * 10;
                 const brakeLiningWearPercent = moduleReader.ReadUInt8() * 0.4;
+                const wheelTemperatureDegC = moduleReader.ReadUInt8() * 10;
 
                 wheels.push(new ProtocolYHgvTrailerWheelData(
                     rawWheelPosition,
                     tyrePressureBar,
                     brakeTemperatureDegC,
-                    brakeLiningWearPercent
+                    brakeLiningWearPercent,
+                    wheelTemperatureDegC
                 ));
             }
+
+            const currentEbsSupplyPressureKpa = moduleReader.ReadUInt8() * 5;
+            const parkingBrakeDemand = moduleReader.ReadUInt8() * 0.4;
+            const rawRetarderStatus = moduleReader.ReadUInt8();
+            const retarderReferenceTorqueNm = moduleReader.ReadUInt16();
+            const retarderPercentTorque = moduleReader.ReadUInt8() - 125;
+            const retarderPercentDemand = moduleReader.ReadUInt8() - 125;
 
             report.hgvTrailerData = new ProtocolYHgvTrailerData(
                 canEventDateTime,
@@ -1063,7 +1072,13 @@ export class ProtocolYReport
                 brakingCoefficientRatio,
                 brakingEfficiencyPercent,
                 wheelCount,
-                wheels
+                wheels,
+                currentEbsSupplyPressureKpa,
+                parkingBrakeDemand,
+                rawRetarderStatus,
+                retarderReferenceTorqueNm,
+                retarderPercentTorque,
+                retarderPercentDemand
             );
         }
 
