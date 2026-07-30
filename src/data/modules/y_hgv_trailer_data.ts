@@ -66,21 +66,18 @@ export class ProtocolYHgvTrailerWheelData
     public tyrePressureBar: number;
     public brakeTemperatureDegC: number;
     public brakeLiningWearPercent: number;
-    public tyreTemperatureDegC: number;
 
     constructor (
         rawWheelPosition: number,
         tyrePressureBar: number,
         brakeTemperatureDegC: number,
-        brakeLiningWearPercent: number,
-        tyreTemperatureDegC: number
+        brakeLiningWearPercent: number
     )
     {
         this.wheelPosition = new ProtocolYHgvTrailerWheelPosition(rawWheelPosition);
         this.tyrePressureBar = tyrePressureBar;
         this.brakeTemperatureDegC = brakeTemperatureDegC;
         this.brakeLiningWearPercent = brakeLiningWearPercent;
-        this.tyreTemperatureDegC = tyreTemperatureDegC;
     }
 }
 
