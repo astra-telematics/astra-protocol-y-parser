@@ -1044,14 +1044,12 @@ export class ProtocolYReport
                 const tyrePressureBar = moduleReader.ReadUInt8() * 0.1;
                 const brakeTemperatureDegC = moduleReader.ReadUInt8() * 10;
                 const brakeLiningWearPercent = moduleReader.ReadUInt8() * 0.4;
-                const wheelTemperatureDegC = moduleReader.ReadUInt8() * 10;
 
                 wheels.push(new ProtocolYHgvTrailerWheelData(
                     rawWheelPosition,
                     tyrePressureBar,
                     brakeTemperatureDegC,
-                    brakeLiningWearPercent,
-                    wheelTemperatureDegC
+                    brakeLiningWearPercent
                 ));
             }
 
