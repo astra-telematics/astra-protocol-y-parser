@@ -37,7 +37,7 @@ import { ProtocolYRayvoltEBicycle } from "./modules/y_rayvolt_e_bicycle";
 import { ProtocolYRedforgeWeight } from "./modules/y_redforge_weight";
 import { ProtocolYSegwayNinebotEs4Sharing } from "./modules/y_segway_ninebot_es4_sharing";
 import { ProtocolYSensor, ProtocolYSensorType, ProtocolYSensors } from "./modules/y_sensors";
-import { ProtocolYSignalQuality } from "./modules/y_signal_quality";
+import { ProtocolYTpms, ProtocolYTpmsSensor } from "./modules/y_tpms";
 import { ProtocolYSimCardSerialNumber } from "./modules/y_sim_card_serial_number";
 import { ProtocolYSimSubscriberId } from "./modules/y_sim_subscriber_id";
 import { ProtocolYStarsAcimMotorControllerData } from "./modules/y_stars_acim_motor_controller_data";
@@ -81,7 +81,7 @@ export class ProtocolYReport
     public digitals?: ProtocolYDigitals;
     public analogues?: ProtocolYAnalogues;
     public driverBehaviour?: ProtocolYDriverBehaviour;
-    public signalQuality?: ProtocolYSignalQuality;
+    public tpms?: ProtocolYTpms;
     public gsmNetworkInfo?: ProtocolYGsmNetworkInfo;
     public geofences?: ProtocolYGeofences;
     public driverId?: ProtocolYDriverId;
@@ -250,11 +250,22 @@ export class ProtocolYReport
             )
         }
 
-        // SIGNAL QUALITY - removed in Protocol Y
-        if ((moduleMask & ProtocolYSignalQuality.mask) === ProtocolYSignalQuality.mask)
+        // TPMS
+        if ((moduleMask & ProtocolYTpms.mask) === ProtocolYTpms.mask)
         {
-            readModuleReader(reader, 1);
-            // Do not read bytes here for Protocol Y new format.
+            const moduleReader = readModuleReader(reader, 1);
+            const sensorCount = moduleReader.ReadUInt8();
+            const sensors: ProtocolYTpmsSensor[] = [];
+            for (let i = 0; i < sensorCount; i++)
+            {
+                sensors.push(new ProtocolYTpmsSensor(
+                    moduleReader.ReadUInt8(),
+                    moduleReader.ReadUInt8(),
+                    moduleReader.ReadUInt8() / 10,
+                    moduleReader.ReadInt8()
+                ));
+            }
+            report.tpms = new ProtocolYTpms(sensorCount, sensors);
         }
 
         // GSM NETWORK INFO
