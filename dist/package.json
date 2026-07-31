@@ -1,6 +1,6 @@
 {
     "name": "astra-protocol-y-parser",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "description": "Astra Telematics Protocol Y parser",
     "main": "lib/es5/index.js",
     "module": "lib/es6/index.js",
