@@ -6,7 +6,7 @@ export class ProtocolYHgvTrailerFlags
     public absActivated: boolean;
     public brakeEvent: boolean;
     public absError: boolean;
-    public ebsError: boolean;
+    public brakingImbalance: boolean;
     public redWarningLight: boolean;
     public amberWarningLight: boolean;
     public stabilityControlActivated: boolean;
@@ -18,27 +18,11 @@ export class ProtocolYHgvTrailerFlags
         this.absActivated = (raw & 0x01) === 0x01;
         this.brakeEvent = (raw & 0x02) === 0x02;
         this.absError = (raw & 0x04) === 0x04;
-        this.ebsError = (raw & 0x08) === 0x08;
+        this.brakingImbalance = (raw & 0x08) === 0x08;
         this.redWarningLight = (raw & 0x10) === 0x10;
         this.amberWarningLight = (raw & 0x20) === 0x20;
         this.stabilityControlActivated = (raw & 0x40) === 0x40;
         this.rolloverPreventionActivated = (raw & 0x80) === 0x80;
-    }
-}
-
-export class ProtocolYHgvTrailerRetarderStatus
-{
-    public raw: number;
-    public retarderAvailable: boolean;
-    public retarderError: boolean;
-    public retarderActive: boolean;
-
-    constructor (raw: number)
-    {
-        this.raw = raw;
-        this.retarderAvailable = (raw & 0x01) === 0x01;
-        this.retarderError = (raw & 0x02) === 0x02;
-        this.retarderActive = (raw & 0x04) === 0x04;
     }
 }
 
@@ -63,15 +47,15 @@ export class ProtocolYHgvTrailerWheelPosition
 export class ProtocolYHgvTrailerWheelData
 {
     public wheelPosition: ProtocolYHgvTrailerWheelPosition;
-    public tyrePressureBar: number;
-    public brakeTemperatureDegC: number;
-    public brakeLiningWearPercent: number;
+    public tyrePressureBar?: number;
+    public brakeTemperatureDegC?: number;
+    public brakeLiningWearPercent?: number;
 
     constructor (
         rawWheelPosition: number,
-        tyrePressureBar: number,
-        brakeTemperatureDegC: number,
-        brakeLiningWearPercent: number
+        tyrePressureBar?: number,
+        brakeTemperatureDegC?: number,
+        brakeLiningWearPercent?: number
     )
     {
         this.wheelPosition = new ProtocolYHgvTrailerWheelPosition(rawWheelPosition);
@@ -91,16 +75,13 @@ export class ProtocolYHgvTrailerData
     public wheelBasedSpeedKph: number;
     public roadAngleDeg: number;
     public brakeDemandPressureKpa: number;
-    public brakingCoefficientRatio: number;
-    public brakingEfficiencyPercent: number;
+    public brakingEfficiencyRawPercent: number;
+    public brakingEfficiencyCompensatedPercent: number;
     public wheelCount: number;
     public wheels: ProtocolYHgvTrailerWheelData[];
     public ebsSupplyPressureKpa: number;
     public parkingBrakeDemand: number;
-    public retarderStatus: ProtocolYHgvTrailerRetarderStatus;
-    public retarderReferenceTorqueNm: number;
-    public retarderPercentTorque: number;
-    public retarderPercentDemand: number;
+    public individualBrakePressuresKpa: (number | undefined)[];
 
     constructor (
         canEventDateTime: moment.Moment,
@@ -109,16 +90,13 @@ export class ProtocolYHgvTrailerData
         wheelBasedSpeedKph: number,
         roadAngleDeg: number,
         brakeDemandPressureKpa: number,
-        brakingCoefficientRatio: number,
-        brakingEfficiencyPercent: number,
+        brakingEfficiencyRawPercent: number,
+        brakingEfficiencyCompensatedPercent: number,
         wheelCount: number,
         wheels: ProtocolYHgvTrailerWheelData[],
         ebsSupplyPressureKpa: number,
         parkingBrakeDemand: number,
-        rawRetarderStatus: number,
-        retarderReferenceTorqueNm: number,
-        retarderPercentTorque: number,
-        retarderPercentDemand: number
+        individualBrakePressuresKpa: (number | undefined)[]
     )
     {
         this.canEventDateTime = canEventDateTime;
@@ -127,15 +105,12 @@ export class ProtocolYHgvTrailerData
         this.wheelBasedSpeedKph = wheelBasedSpeedKph;
         this.roadAngleDeg = roadAngleDeg;
         this.brakeDemandPressureKpa = brakeDemandPressureKpa;
-        this.brakingCoefficientRatio = brakingCoefficientRatio;
-        this.brakingEfficiencyPercent = brakingEfficiencyPercent;
+        this.brakingEfficiencyRawPercent = brakingEfficiencyRawPercent;
+        this.brakingEfficiencyCompensatedPercent = brakingEfficiencyCompensatedPercent;
         this.wheelCount = wheelCount;
         this.wheels = wheels;
         this.ebsSupplyPressureKpa = ebsSupplyPressureKpa;
         this.parkingBrakeDemand = parkingBrakeDemand;
-        this.retarderStatus = new ProtocolYHgvTrailerRetarderStatus(rawRetarderStatus);
-        this.retarderReferenceTorqueNm = retarderReferenceTorqueNm;
-        this.retarderPercentTorque = retarderPercentTorque;
-        this.retarderPercentDemand = retarderPercentDemand;
+        this.individualBrakePressuresKpa = individualBrakePressuresKpa;
     }
 }
