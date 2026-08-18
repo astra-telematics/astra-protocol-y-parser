@@ -75,12 +75,12 @@ export class ProtocolYHgvTrailerData
     public wheelBasedSpeedKph: number;
     public roadAngleDeg: number;
     public brakeDemandPressureKpa: number;
-    public brakingEfficiencyRawPercent: number;
-    public brakingEfficiencyCompensatedPercent: number;
+    public brakingEfficiencyRawPercent?: number;
+    public brakingEfficiencyCompensatedPercent?: number;
     public wheelCount: number;
     public wheels: ProtocolYHgvTrailerWheelData[];
     public ebsSupplyPressureKpa: number;
-    public parkingBrakeDemand: number;
+    public parkingBrakeDemand?: number;
     public individualBrakePressuresKpa: (number | undefined)[];
 
     constructor (
@@ -90,13 +90,13 @@ export class ProtocolYHgvTrailerData
         wheelBasedSpeedKph: number,
         roadAngleDeg: number,
         brakeDemandPressureKpa: number,
-        brakingEfficiencyRawPercent: number,
-        brakingEfficiencyCompensatedPercent: number,
         wheelCount: number,
         wheels: ProtocolYHgvTrailerWheelData[],
         ebsSupplyPressureKpa: number,
-        parkingBrakeDemand: number,
-        individualBrakePressuresKpa: (number | undefined)[]
+        brakingEfficiencyRawPercent?: number,
+        brakingEfficiencyCompensatedPercent?: number,
+        parkingBrakeDemand?: number,
+        individualBrakePressuresKpa?: (number | undefined)[]
     )
     {
         this.canEventDateTime = canEventDateTime;
@@ -111,6 +111,6 @@ export class ProtocolYHgvTrailerData
         this.wheels = wheels;
         this.ebsSupplyPressureKpa = ebsSupplyPressureKpa;
         this.parkingBrakeDemand = parkingBrakeDemand;
-        this.individualBrakePressuresKpa = individualBrakePressuresKpa;
+        this.individualBrakePressuresKpa = individualBrakePressuresKpa ?? [];
     }
 }

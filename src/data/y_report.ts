@@ -1083,12 +1083,12 @@ export class ProtocolYReport
                 wheelBasedSpeedKph,
                 roadAngleDeg,
                 brakeDemandPressureKpa,
-                brakingEfficiencyRawPercent,
-                brakingEfficiencyCompensatedPercent,
                 wheelCount,
                 wheels,
                 currentEbsSupplyPressureKpa,
-                parkingBrakeDemand,
+                brakingEfficiencyRawPercent !== 0xFF ? brakingEfficiencyRawPercent : undefined,
+                brakingEfficiencyCompensatedPercent !== 0xFF ? brakingEfficiencyCompensatedPercent : undefined,
+                parkingBrakeDemand !== 0xFF ? parkingBrakeDemand : undefined,
                 individualBrakePressuresKpa
             );
         }

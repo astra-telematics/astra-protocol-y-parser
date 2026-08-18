@@ -6,9 +6,9 @@ This package has been written in TypeScript, offering rich code-hinting and type
 
 This parser has been updated for **Protocol Y v1.9**.
 
-## Protocol Y v1.9 notes
+## Protocol Y v1.10 notes
 
-Protocol Y v1.9 changes the report header layout and several data modules.
+Protocol Y v1.10 changes the report header layout and several data modules.
 
 ### Report header changes
 
