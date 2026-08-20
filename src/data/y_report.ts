@@ -1042,11 +1042,15 @@ export class ProtocolYReport
             const currentEbsSupplyPressureKpa = moduleReader.ReadUInt8() * 5;
             const totalAxleLoadKg = moduleReader.ReadUInt16() * 2;
             const wheelBasedSpeedKph = moduleReader.ReadUInt16() / 256;
-            const roadAngleDeg = moduleReader.ReadUInt8() / 10;
+            const rawRoadAngleDeg = moduleReader.ReadInt8();
+            const roadAngleDeg = rawRoadAngleDeg !== -128 ? rawRoadAngleDeg / 10 : undefined;
             const brakeDemandPressureKpa = moduleReader.ReadUInt16() / 52;
-            const parkingBrakeDemand = moduleReader.ReadUInt8() * 0.4;
-            const brakingEfficiencyRawPercent = moduleReader.ReadUInt8();
-            const brakingEfficiencyCompensatedPercent = moduleReader.ReadUInt8();
+            const rawParkingBrakeDemand = moduleReader.ReadUInt8();
+            const parkingBrakeDemand = rawParkingBrakeDemand !== 0xFF ? rawParkingBrakeDemand * 0.4 : undefined;
+            const rawBrakingEfficiencyRawPercent = moduleReader.ReadUInt8();
+            const brakingEfficiencyRawPercent = rawBrakingEfficiencyRawPercent !== 0xFF ? rawBrakingEfficiencyRawPercent : undefined;
+            const rawBrakingEfficiencyCompensatedPercent = moduleReader.ReadUInt8();
+            const brakingEfficiencyCompensatedPercent = rawBrakingEfficiencyCompensatedPercent !== 0xFF ? rawBrakingEfficiencyCompensatedPercent : undefined;
 
             const wheelCount = moduleReader.ReadUInt8();
             const wheels: ProtocolYHgvTrailerWheelData[] = [];
@@ -1081,14 +1085,14 @@ export class ProtocolYReport
                 rawFlags,
                 totalAxleLoadKg,
                 wheelBasedSpeedKph,
-                roadAngleDeg,
                 brakeDemandPressureKpa,
                 wheelCount,
                 wheels,
                 currentEbsSupplyPressureKpa,
-                brakingEfficiencyRawPercent !== 0xFF ? brakingEfficiencyRawPercent : undefined,
-                brakingEfficiencyCompensatedPercent !== 0xFF ? brakingEfficiencyCompensatedPercent : undefined,
-                parkingBrakeDemand !== 0xFF ? parkingBrakeDemand : undefined,
+                roadAngleDeg,
+                brakingEfficiencyRawPercent,
+                brakingEfficiencyCompensatedPercent,
+                parkingBrakeDemand,
                 individualBrakePressuresKpa
             );
         }

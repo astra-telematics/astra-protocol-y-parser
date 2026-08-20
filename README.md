@@ -4,11 +4,11 @@ A lightweight NodeJS package for parsing data from Astra Telematics IoT devices.
 
 This package has been written in TypeScript, offering rich code-hinting and type safety.
 
-This parser has been updated for **Protocol Y v1.9**.
+This parser has been updated for **Protocol Y v2.2**.
 
-## Protocol Y v1.10 notes
+## Protocol Y v2.2 notes
 
-Protocol Y v1.10 changes the report header layout and several data modules.
+Protocol Y v2.2 changes the report header layout and several data modules.
 
 ### Report header changes
 

@@ -4,7 +4,10 @@ export class ProtocolYHgvTrailerFlags
 {
     public raw: number;
     public absActivated: boolean;
-    public brakeEvent: boolean;
+    public brakeEventStart: boolean;
+    public brakeEventOngoing: boolean;
+    public brakeEventEnd: boolean;
+    public brakeEventValid: boolean;
     public absError: boolean;
     public brakingImbalance: boolean;
     public redWarningLight: boolean;
@@ -16,13 +19,16 @@ export class ProtocolYHgvTrailerFlags
     {
         this.raw = raw;
         this.absActivated = (raw & 0x01) === 0x01;
-        this.brakeEvent = (raw & 0x02) === 0x02;
-        this.absError = (raw & 0x04) === 0x04;
-        this.brakingImbalance = (raw & 0x08) === 0x08;
-        this.redWarningLight = (raw & 0x10) === 0x10;
-        this.amberWarningLight = (raw & 0x20) === 0x20;
-        this.stabilityControlActivated = (raw & 0x40) === 0x40;
-        this.rolloverPreventionActivated = (raw & 0x80) === 0x80;
+        this.brakeEventStart = (raw & 0x02) === 0x02;
+        this.brakeEventOngoing = (raw & 0x04) === 0x04;
+        this.brakeEventEnd = (raw & 0x08) === 0x08;
+        this.brakeEventValid = (raw & 0x10) === 0x10;
+        this.absError = (raw & 0x20) === 0x20;
+        this.brakingImbalance = (raw & 0x40) === 0x40;
+        this.redWarningLight = (raw & 0x80) === 0x80;
+        this.amberWarningLight = (raw & 0x100) === 0x100;
+        this.stabilityControlActivated = (raw & 0x200) === 0x200;
+        this.rolloverPreventionActivated = (raw & 0x400) === 0x400;
     }
 }
 
@@ -73,7 +79,7 @@ export class ProtocolYHgvTrailerData
     public flags: ProtocolYHgvTrailerFlags;
     public totalAxleLoadKg: number;
     public wheelBasedSpeedKph: number;
-    public roadAngleDeg: number;
+    public roadAngleDeg?: number;
     public brakeDemandPressureKpa: number;
     public brakingEfficiencyRawPercent?: number;
     public brakingEfficiencyCompensatedPercent?: number;
@@ -88,11 +94,11 @@ export class ProtocolYHgvTrailerData
         rawFlags: number,
         totalAxleLoadKg: number,
         wheelBasedSpeedKph: number,
-        roadAngleDeg: number,
         brakeDemandPressureKpa: number,
         wheelCount: number,
         wheels: ProtocolYHgvTrailerWheelData[],
         ebsSupplyPressureKpa: number,
+        roadAngleDeg?: number,
         brakingEfficiencyRawPercent?: number,
         brakingEfficiencyCompensatedPercent?: number,
         parkingBrakeDemand?: number,
