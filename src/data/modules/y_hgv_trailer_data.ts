@@ -83,6 +83,7 @@ export class ProtocolYHgvTrailerData
     public brakeDemandPressureKpa: number;
     public brakingEfficiencyRawPercent?: number;
     public brakingEfficiencyCompensatedPercent?: number;
+    public decelerationMpss?: number;
     public wheelCount: number;
     public wheels: ProtocolYHgvTrailerWheelData[];
     public ebsSupplyPressureKpa: number;
@@ -99,6 +100,7 @@ export class ProtocolYHgvTrailerData
         wheels: ProtocolYHgvTrailerWheelData[],
         ebsSupplyPressureKpa: number,
         roadAngleDeg?: number,
+        decelerationMpss?: number,
         brakingEfficiencyRawPercent?: number,
         brakingEfficiencyCompensatedPercent?: number,
         parkingBrakeDemand?: number,
@@ -111,6 +113,7 @@ export class ProtocolYHgvTrailerData
         this.wheelBasedSpeedKph = wheelBasedSpeedKph;
         this.roadAngleDeg = roadAngleDeg;
         this.brakeDemandPressureKpa = brakeDemandPressureKpa;
+        this.decelerationMpss = decelerationMpss;
         this.brakingEfficiencyRawPercent = brakingEfficiencyRawPercent;
         this.brakingEfficiencyCompensatedPercent = brakingEfficiencyCompensatedPercent;
         this.wheelCount = wheelCount;
