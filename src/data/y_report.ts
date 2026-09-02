@@ -1044,7 +1044,7 @@ export class ProtocolYReport
             const wheelBasedSpeedKph = moduleReader.ReadUInt16() / 256;
             const rawRoadAngleDeg = moduleReader.ReadInt8();
             const roadAngleDeg = rawRoadAngleDeg !== -128 ? rawRoadAngleDeg / 10 : undefined;
-            const rawDecelerationMpss = moduleReader.ReadInt8();
+            const rawDecelerationMpss = moduleReader.ReadUInt8();
             const decelerationMpss = rawDecelerationMpss !== 0xFF ? rawDecelerationMpss / 20 : undefined;
             const brakeDemandPressureKpa = moduleReader.ReadUInt16() / 52;
             const rawParkingBrakeDemand = moduleReader.ReadUInt8();
