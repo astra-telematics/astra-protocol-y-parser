@@ -1045,7 +1045,7 @@ export class ProtocolYReport
             const rawRoadAngleDeg = moduleReader.ReadInt8();
             const roadAngleDeg = rawRoadAngleDeg !== -128 ? rawRoadAngleDeg / 10 : undefined;
             const rawDecelerationMpss = moduleReader.ReadInt8();
-            const decelerationMpss = rawDecelerationMpss !== -128 ? rawDecelerationMpss / 10 : undefined;
+            const decelerationMpss = rawDecelerationMpss !== 0xFF ? rawDecelerationMpss / 20 : undefined;
             const brakeDemandPressureKpa = moduleReader.ReadUInt16() / 52;
             const rawParkingBrakeDemand = moduleReader.ReadUInt8();
             const parkingBrakeDemand = rawParkingBrakeDemand !== 0xFF ? rawParkingBrakeDemand * 0.4 : undefined;
@@ -1057,22 +1057,25 @@ export class ProtocolYReport
             const wheelCount = moduleReader.ReadUInt8();
             const wheels: ProtocolYHgvTrailerWheelData[] = [];
 
-            for (let i = 0; i < wheelCount; i++)
+            if (wheelCount > 0 && wheelCount < 20)
             {
-                const rawWheelPosition = moduleReader.ReadUInt8();
-                const rawTyrePressureBar = moduleReader.ReadUInt8() * 0.1;
-                const rawBrakeTemperatureDegC = moduleReader.ReadUInt8() * 10;
-                const rawBrakeLiningWearPercent = moduleReader.ReadUInt8() * 0.4;
-                const tyrePressureBar = rawTyrePressureBar !== 0xFF ? rawTyrePressureBar * 0.1 : undefined;
-                const brakeTemperatureDegC = rawBrakeTemperatureDegC !== 0xFF ? rawBrakeTemperatureDegC * 10 : undefined;
-                const brakeLiningWearPercent = rawBrakeLiningWearPercent !== 0xFF ? rawBrakeLiningWearPercent * 0.4 : undefined;
+                for (let i = 0; i < wheelCount; i++)
+                {
+                    const rawWheelPosition = moduleReader.ReadUInt8();
+                    const rawTyrePressureBar = moduleReader.ReadUInt8();
+                    const rawBrakeTemperatureDegC = moduleReader.ReadUInt8();
+                    const rawBrakeLiningWearPercent = moduleReader.ReadUInt8();
+                    const tyrePressureBar = rawTyrePressureBar !== 0xFF ? rawTyrePressureBar * 0.1 : undefined;
+                    const brakeTemperatureDegC = rawBrakeTemperatureDegC !== 0xFF ? rawBrakeTemperatureDegC * 10 : undefined;
+                    const brakeLiningWearPercent = rawBrakeLiningWearPercent !== 0xFF ? rawBrakeLiningWearPercent * 0.4 : undefined;
 
-                wheels.push(new ProtocolYHgvTrailerWheelData(
-                    rawWheelPosition,
-                    tyrePressureBar,
-                    brakeTemperatureDegC,
-                    brakeLiningWearPercent
-                ));
+                    wheels.push(new ProtocolYHgvTrailerWheelData(
+                        rawWheelPosition,
+                        tyrePressureBar,
+                        brakeTemperatureDegC,
+                        brakeLiningWearPercent
+                    ));
+                }
             }
 
             const individualBrakePressuresKpa: (number | undefined)[] = [];
