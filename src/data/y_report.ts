@@ -33,7 +33,7 @@ import { ProtocolYObdDtcCodes } from "./modules/y_obd_dtc_codes";
 import { ProtocolYObdInJourneyData } from "./modules/y_obd_in_journey_data";
 import { ProtocolYObdJourneyStopData } from "./modules/y_obd_journey_stop_data";
 import { ProtocolYOneWireTemperatureProbe } from "./modules/y_one_wire_temperature_probe";
-import { ProtocolYRayvoltEBicycle } from "./modules/y_rayvolt_e_bicycle";
+import { ProtocolYJ1939Dtcs } from "./modules/y_j1939_dtcs";
 import { ProtocolYRedforgeWeight } from "./modules/y_redforge_weight";
 import { ProtocolYSegwayNinebotEs4Sharing } from "./modules/y_segway_ninebot_es4_sharing";
 import { ProtocolYSensor, ProtocolYSensorType, ProtocolYSensors } from "./modules/y_sensors";
@@ -61,7 +61,7 @@ import { ProtocolYBeacon, ProtocolYBeacons, ProtocolYBeaconType } from "./module
 import { ProtocolYGritterDataBsEn15430 } from "./modules/y_gritter_data_bs_en_15430";
 import { ProtocolYDriverAlcoholTestData } from "./modules/y_driver_alcohol_test_data";
 
-const binutils = require('binutils64');
+import {BinaryReader} from 'binutils64';
 
 export class ProtocolYReport
 {
@@ -96,7 +96,7 @@ export class ProtocolYReport
     public carrierTemperatureData?: ProtocolYCarrierTemperatureData;
     public oneWireTemperatureProbe?: ProtocolYOneWireTemperatureProbe;
     public carrierTwoWayAlarms?: ProtocolYCarrierTwoWayAlarms;
-    public rayvoltEBicycle?: ProtocolYRayvoltEBicycle;
+    public j1939Dtcs?: ProtocolYJ1939Dtcs;
     public econ3Byte?: ProtocolYEcon3Byte;
     public gritterDataBsEn15430?: ProtocolYGritterDataBsEn15430;
     public beacons?: ProtocolYBeacons;
@@ -132,7 +132,7 @@ export class ProtocolYReport
     
     constructor(){}
 
-    static fromReader (reader: any, loginData?: ProtocolYLoginData): ProtocolYReport
+    static fromReader (reader: BinaryReader, loginData?: ProtocolYLoginData): ProtocolYReport
     {
         let report = new ProtocolYReport();
 
@@ -508,27 +508,10 @@ export class ProtocolYReport
         }
 
         // RAYVOLT E-BICYCLE
-        if ((moduleMask & ProtocolYRayvoltEBicycle.mask) === ProtocolYRayvoltEBicycle.mask)
+        if ((moduleMask & ProtocolYJ1939Dtcs.mask) === ProtocolYJ1939Dtcs.mask)
         {
             const moduleReader = readModuleReader(reader, 1);
-            if (loginData?.protocolId === 'Z')
-            {
-                moduleReader.ReadBytes(19);
-            }
-            else
-            {
-                report.rayvoltEBicycle = new ProtocolYRayvoltEBicycle(
-                    moduleReader.ReadUInt32(),
-                    moduleReader.ReadUInt16(),
-                    moduleReader.ReadUInt16(),
-                    moduleReader.ReadUInt16(),
-                    moduleReader.ReadUInt8(),
-                    moduleReader.ReadUInt8() / 4,
-                    moduleReader.ReadInt8(),
-                    moduleReader.ReadUInt8() / 2,
-                    moduleReader.ReadUInt16()
-                )
-            }
+            report.j1939Dtcs = new ProtocolYJ1939Dtcs(moduleReader);
         }
 
         // ECON 3-BYTE
@@ -1124,7 +1107,7 @@ export class ProtocolYReport
                 beacon.type = moduleReader.ReadUInt8();
                 const beaconMetaDataBytesLength = moduleReader.ReadUInt8();
                 const rawMetadata: Buffer = moduleReader.ReadBytes(beaconMetaDataBytesLength);
-                const metadataReader = new binutils.BinaryReader(rawMetadata);
+                const metadataReader = new BinaryReader(rawMetadata);
 
                 switch (beacon.type)
                 {

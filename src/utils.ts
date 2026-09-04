@@ -1,4 +1,4 @@
-const binutils = require('binutils64');
+import {BinaryReader} from 'binutils64';
 
 export function readU24 (reader: any)
 {
@@ -23,9 +23,9 @@ export function readU32BE (reader: any)
 }
 
 export function readModule (
-    reader: any,
+    reader: BinaryReader,
     byteCountBytes: 1 | 2 = 1
-): { moduleReader: any, moduleByteCount: number, bodyLength: number }
+): { moduleReader: BinaryReader, moduleByteCount: number, bodyLength: number }
 {
     const moduleByteCount = byteCountBytes === 2
         ? reader.ReadUInt16()
@@ -40,12 +40,12 @@ export function readModule (
     const body = reader.ReadBytes(bodyLength);
 
     return {
-        moduleReader: new binutils.BinaryReader(body),
+        moduleReader: new BinaryReader(body),
         moduleByteCount,
         bodyLength
     };
 }
-export function readModuleReader (reader: any, byteCountBytes: 1 | 2 = 1): any
+export function readModuleReader (reader: any, byteCountBytes: 1 | 2 = 1): BinaryReader
 {
     return readModule(reader, byteCountBytes).moduleReader;
 }

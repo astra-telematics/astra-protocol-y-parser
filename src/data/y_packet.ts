@@ -4,7 +4,7 @@ import { ProtocolYReport } from "./y_report";
 import * as luhn from "luhn";
 import { ProtocolYLoginData } from "./y_login_data";
 
-const binutils = require('binutils64');
+import {BinaryReader} from 'binutils64';
 
 export class ProtocolYPacket
 {    
@@ -17,7 +17,7 @@ export class ProtocolYPacket
     static fromData (data: Buffer, loginData?: ProtocolYLoginData): ProtocolYPacket | null
     {
         let packet = new ProtocolYPacket();
-        let reader = new binutils.BinaryReader(data);
+        let reader = new BinaryReader(data);
 
         if (data.length >= 6)
         {
