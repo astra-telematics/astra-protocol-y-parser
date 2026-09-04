@@ -3,7 +3,7 @@ name: Publish Package
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
 
 permissions:
   id-token: write  # Required for OIDC
@@ -20,11 +20,24 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false  # never use caching in release builds
-      - run: npm ci
-      - run: rm -rf ./dist/lib
-      - run: npm run compile
-      - run: rm -f dist/README.md
-      - run: cp README.md dist/README.md
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Clean dist directory
+        run: rm -rf ./dist/lib
+
+      - name: Set npm version
+        working-directory: ./dist
+        run: npm version ${GITHUB_REF#refs/tags/v} --no-git-tag-version
+
+      - name: Compile to JavaScript
+        run: npm run compile
+
+      - name: Copy README to dist
+        run: |
+          rm -f ./dist/README.md
+          cp README.md ./dist/README.md
+        
       - name: Publish to npm
         working-directory: ./dist
         run: npm publish  # Or: npm stage publish
