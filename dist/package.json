@@ -24,7 +24,7 @@
     },
     "license": "MIT",
     "dependencies": {
-        "binutils64": "^0.1.2",
+        "binutils64": "^0.3.0",
         "crc": "^4.3.2",
         "moment": "^2.30.1",
         "moment-timezone": "^0.5.45",
