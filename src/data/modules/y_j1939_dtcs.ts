@@ -41,10 +41,10 @@ export class ProtocolYJ1939Dtcs
         this.dtcs = [];
         this.dtcsCount = 0;
         let rawDtc = moduleReader.ReadUInt32();
-        do {
+        while (rawDtc != 0) {
             this.dtcs.push(new ProtocolYJ1939Dtc(rawDtc));
             this.dtcsCount++;
             rawDtc = moduleReader.ReadUInt32();
-        } while (rawDtc != 0);
+        }
     }
 }

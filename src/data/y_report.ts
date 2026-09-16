@@ -482,11 +482,15 @@ export class ProtocolYReport
         if ((moduleMask & ProtocolYOneWireTemperatureProbe.mask) === ProtocolYOneWireTemperatureProbe.mask)
         {
             const moduleReader = readModuleReader(reader, 1);
+            const rawChannel1 = moduleReader.ReadUInt16();
+            const rawChannel2 = moduleReader.ReadUInt16();
+            const rawChannel3 = moduleReader.ReadUInt16();
+            const rawChannel4 = moduleReader.ReadUInt16();
             report.oneWireTemperatureProbe = new ProtocolYOneWireTemperatureProbe(
-                (moduleReader.ReadUInt16() / 10) - 550,
-                (moduleReader.ReadUInt16() / 10) - 550,
-                (moduleReader.ReadUInt16() / 10) - 550,
-                (moduleReader.ReadUInt16() / 10) - 550
+                rawChannel1 !== 0xFFFF ? (rawChannel1 / 10) - 550 : undefined,
+                rawChannel2 !== 0xFFFF ? (rawChannel2 / 10) - 550 : undefined,
+                rawChannel3 !== 0xFFFF ? (rawChannel3 / 10) - 550 : undefined,
+                rawChannel4 !== 0xFFFF ? (rawChannel4 / 10) - 550 : undefined
             )
         }
 
