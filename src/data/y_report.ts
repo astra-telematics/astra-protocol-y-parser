@@ -189,7 +189,7 @@ export class ProtocolYReport
         // DEVICE POWER
         if ((moduleMask & ProtocolYDevicePower.mask) === ProtocolYDevicePower.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'devicePower');
             report.devicePower = new ProtocolYDevicePower(
                 moduleReader.ReadUInt16() * 0.1,
                 moduleReader.ReadUInt8()
@@ -199,7 +199,7 @@ export class ProtocolYReport
         // GPS DATA
         if ((moduleMask & ProtocolYGpsData.mask) === ProtocolYGpsData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'gpsData');
             report.rawGpsTimeDateLastKnownGood = moduleReader.ReadUInt32();
             report.gpsData = new ProtocolYGpsData(
                 moduleReader.ReadInt32() / 1000000,
@@ -218,7 +218,7 @@ export class ProtocolYReport
         // DIGITALS
         if ((moduleMask & ProtocolYDigitals.mask) === ProtocolYDigitals.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'digitals');
             report.digitals = new ProtocolYDigitals(
                 moduleReader.ReadUInt16(),
                 moduleReader.ReadUInt16()
@@ -228,7 +228,7 @@ export class ProtocolYReport
         // ANALOGUES
         if ((moduleMask & ProtocolYAnalogues.mask) === ProtocolYAnalogues.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'analogues');
             report.analogues = new ProtocolYAnalogues(
                 moduleReader.ReadUInt16(),
                 moduleReader.ReadUInt16()
@@ -238,7 +238,7 @@ export class ProtocolYReport
         // DRIVER BEHAVIOUR
         if ((moduleMask & ProtocolYDriverBehaviour.mask) === ProtocolYDriverBehaviour.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'driverBehaviour');
             report.driverBehaviour = new ProtocolYDriverBehaviour(
                 moduleReader.ReadUInt8() / 10,
                 moduleReader.ReadUInt8() / 10,
@@ -253,7 +253,7 @@ export class ProtocolYReport
         // TPMS
         if ((moduleMask & ProtocolYTpms.mask) === ProtocolYTpms.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'TPMS');
             const sensorCount = moduleReader.ReadUInt8();
             const sensors: ProtocolYTpmsSensor[] = [];
             for (let i = 0; i < sensorCount; i++)
@@ -271,7 +271,7 @@ export class ProtocolYReport
         // GSM NETWORK INFO
         if ((moduleMask & ProtocolYGsmNetworkInfo.mask) === ProtocolYGsmNetworkInfo.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'gsmNetworkInfo');
             report.gsmNetworkInfo = new ProtocolYGsmNetworkInfo(
                 moduleReader.ReadUInt16(),
                 moduleReader.ReadUInt16(),
@@ -283,7 +283,7 @@ export class ProtocolYReport
         // GEOFENCES
         if ((moduleMask & ProtocolYGeofences.mask) === ProtocolYGeofences.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'geofences');
             report.geofences = new ProtocolYGeofences(
                 moduleReader.ReadUInt8()
             )
@@ -292,7 +292,7 @@ export class ProtocolYReport
         // DRIVER ID
         if ((moduleMask & ProtocolYDriverId.mask) === ProtocolYDriverId.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'DRIVER ID');
             let src: ProtocolYDriverIdSource = ProtocolYDriverIdSource.NONE;
             switch (moduleReader.ReadUInt8())
             {
@@ -318,7 +318,7 @@ export class ProtocolYReport
         // DRIVER ALCOHOL TEST DATA
         if ((moduleMask & ProtocolYDriverAlcoholTestData.mask) === ProtocolYDriverAlcoholTestData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'driverAlcoholTestData');
             const rawStatus = moduleReader.ReadUInt8();
             
             report.driverAlcoholTestData = new ProtocolYDriverAlcoholTestData(
@@ -332,7 +332,7 @@ export class ProtocolYReport
         // FMS JOURNEY-START DATA
         if ((moduleMask & ProtocolYFmsJourneyStartData.mask) === ProtocolYFmsJourneyStartData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'fmsJourneyStartData');
             report.fmsJourneyStartData = new ProtocolYFmsJourneyStartData(
                 moduleReader.ReadUInt16()
             )
@@ -341,7 +341,7 @@ export class ProtocolYReport
         // GNSS STOP-REPORT DATA
         if ((moduleMask & ProtocolYGnssStopReportData.mask) === ProtocolYGnssStopReportData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'GNSS STOP-REPORT DATA');
             let lifetimeOdoKm = moduleReader.ReadUInt8();
             lifetimeOdoKm <<= 8;
             lifetimeOdoKm |= moduleReader.ReadUInt8();
@@ -357,7 +357,7 @@ export class ProtocolYReport
         // FMS IN-JOURNEY DATA
         if ((moduleMask & ProtocolYFmsInJourneyData.mask) === ProtocolYFmsInJourneyData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'fmsInJourneyData');
             report.fmsInJourneyData = new ProtocolYFmsInJourneyData(
                 moduleReader.ReadUInt8(),
                 moduleReader.ReadUInt8(),
@@ -379,7 +379,7 @@ export class ProtocolYReport
         // OBD IN-JOURNEY DATA
         if ((moduleMask & ProtocolYObdInJourneyData.mask) === ProtocolYObdInJourneyData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'obdInJourneyData');
             report.obdInJourneyData = new ProtocolYObdInJourneyData(
                 moduleReader.ReadUInt8(),
                 moduleReader.ReadUInt8(),
@@ -401,7 +401,7 @@ export class ProtocolYReport
         // OBD DTC CODES
         if ((moduleMask & ProtocolYObdDtcCodes.mask) === ProtocolYObdDtcCodes.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'obdDtcCodes');
             report.obdDtcCodes = new ProtocolYObdDtcCodes(
                 moduleReader.ReadBytes(5).toString('ascii'),
                 moduleReader.ReadBytes(5).toString('ascii'),
@@ -414,7 +414,7 @@ export class ProtocolYReport
         // FMS JOURNEY-STOP DATA
         if ((moduleMask & ProtocolYFmsJourneyStopData.mask) === ProtocolYFmsJourneyStopData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'FMS JOURNEY-STOP DATA');
             let lifetimeOdoKm = moduleReader.ReadUInt8();
             lifetimeOdoKm <<= 8;
             lifetimeOdoKm |= moduleReader.ReadUInt8();
@@ -434,7 +434,7 @@ export class ProtocolYReport
         // OBD JOURNEY-STOP DATA
         if ((moduleMask & ProtocolYObdJourneyStopData.mask) === ProtocolYObdJourneyStopData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'OBD JOURNEY-STOP DATA');
             let lifetimeOdoKm = moduleReader.ReadUInt8();
             lifetimeOdoKm <<= 8;
             lifetimeOdoKm |= moduleReader.ReadUInt8();
@@ -452,7 +452,7 @@ export class ProtocolYReport
         // CARRIER TEMPERATURE DATA
         if ((moduleMask & ProtocolYCarrierTemperatureData.mask) === ProtocolYCarrierTemperatureData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'CARRIER TEMPERATURE DATA');
             if (loginData?.protocolId === 'Z')
             {
                 moduleReader.ReadBytes(17);
@@ -481,7 +481,7 @@ export class ProtocolYReport
         // ONE-WIRE TEMPERATURE PROBE
         if ((moduleMask & ProtocolYOneWireTemperatureProbe.mask) === ProtocolYOneWireTemperatureProbe.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'oneWireTemperatureProbe');
             const rawChannel1 = moduleReader.ReadUInt16();
             const rawChannel2 = moduleReader.ReadUInt16();
             const rawChannel3 = moduleReader.ReadUInt16();
@@ -497,7 +497,7 @@ export class ProtocolYReport
         // CARRIER TWO-WAY ALARMS
         if ((moduleMask & ProtocolYCarrierTwoWayAlarms.mask) === ProtocolYCarrierTwoWayAlarms.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'CARRIER TWO-WAY ALARMS');
             if (loginData?.protocolId === 'Z')
             {
                 moduleReader.ReadBytes(10);
@@ -514,14 +514,14 @@ export class ProtocolYReport
         // RAYVOLT E-BICYCLE
         if ((moduleMask & ProtocolYJ1939Dtcs.mask) === ProtocolYJ1939Dtcs.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'j1939Dtcs');
             report.j1939Dtcs = new ProtocolYJ1939Dtcs(moduleReader);
         }
 
         // ECON 3-BYTE
         if ((moduleMask & ProtocolYEcon3Byte.mask) === ProtocolYEcon3Byte.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'econ3Byte');
             report.econ3Byte = new ProtocolYEcon3Byte(
                 readU24(moduleReader)
             )
@@ -530,7 +530,7 @@ export class ProtocolYReport
         // GRITTER DATA (BS EN 15430)
         if ((moduleMask & ProtocolYGritterDataBsEn15430.mask) === ProtocolYGritterDataBsEn15430.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'gritterDataBsEn15430');
             report.gritterDataBsEn15430 = new ProtocolYGritterDataBsEn15430(
                 moduleReader.ReadUInt8(),
                 moduleReader.ReadUInt8(),
@@ -543,7 +543,7 @@ export class ProtocolYReport
         // REDFORGE WEIGHT
         if ((moduleMask & ProtocolYRedforgeWeight.mask) === ProtocolYRedforgeWeight.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'redforgeWeight');
             report.redforgeWeight = new ProtocolYRedforgeWeight(
                 moduleReader.ReadUInt8(),
                 moduleReader.ReadUInt8(),
@@ -557,7 +557,7 @@ export class ProtocolYReport
         // NMEA 2000 DATA
         if ((moduleMask & ProtocolYNmea2000Data.mask) === ProtocolYNmea2000Data.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'NMEA 2000 DATA');
             if (loginData?.protocolId === 'Z')
             {
                 moduleReader.ReadBytes(6);
@@ -599,7 +599,7 @@ export class ProtocolYReport
         // SIM SUBSCRIBER ID
         if ((moduleMask & ProtocolYSimSubscriberId.mask) === ProtocolYSimSubscriberId.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'simSubscriberId');
             report.simSubscriberId = new ProtocolYSimSubscriberId(
                 BigInt(`0x${moduleReader.ReadBytes(7).toString('hex')}`).toString()
             )
@@ -608,7 +608,7 @@ export class ProtocolYReport
         // SIM CARD SERIAL NUMBER
         if ((moduleMask & ProtocolYSimCardSerialNumber.mask) === ProtocolYSimCardSerialNumber.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'simCardSerialNumber');
             report.simCardSerialNumber = new ProtocolYSimCardSerialNumber(
                 moduleReader.ReadBytes(20).toString('ascii')
             )
@@ -617,7 +617,7 @@ export class ProtocolYReport
         // FMS DRIVER-ID
         if ((moduleMask & ProtocolYFmsDriverId.mask) === ProtocolYFmsDriverId.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'fmsDriverId');
             report.fmsDriverId = new ProtocolYFmsDriverId(
                 moduleReader.ReadBytes(19).toString('ascii'),
                 moduleReader.ReadBytes(19).toString('ascii')
@@ -627,14 +627,14 @@ export class ProtocolYReport
         // FMS IN-JOURNEY HIGH-RES  - removed in Protocol Y
         if ((moduleMask & ProtocolYFmsInJourneyHighRes.mask) === ProtocolYFmsInJourneyHighRes.mask)
         {
-            readModuleReader(reader, 1);
+            readModuleReader(reader, 1, 'FMS IN-JOURNEY HIGH-RES');
             // Do not read bytes here for Protocol Y new format.
         }
 
         // FMS DRIVER WORKING STATES
         if ((moduleMask & ProtocolYFmsDriverWorkingStates.mask) === ProtocolYFmsDriverWorkingStates.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'FMS DRIVER WORKING STATES');
             if (loginData?.protocolId === 'Z')
             {
                 moduleReader.ReadBytes(1);
@@ -653,7 +653,7 @@ export class ProtocolYReport
         {
             if ((moduleMask & ProtocolZModule32.mask) === ProtocolZModule32.mask)
             {
-                const moduleReader = readModuleReader(reader, 1);
+                const moduleReader = readModuleReader(reader, 1, 'zMod32');
                 report.zMod32 = new ProtocolZModule32(
                     moduleReader.ReadUInt8(),
                     moduleReader.ReadInt8(),
@@ -672,7 +672,7 @@ export class ProtocolYReport
         }
         else if ((moduleMask & ProtocolYSegwayNinebotEs4Sharing.mask) === ProtocolYSegwayNinebotEs4Sharing.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'segwayNinebotEs4Sharing');
             report.segwayNinebotEs4Sharing = new ProtocolYSegwayNinebotEs4Sharing(
                 moduleReader.ReadUInt8() / 10,
                 moduleReader.ReadUInt8(),
@@ -694,7 +694,7 @@ export class ProtocolYReport
         {
             if ((moduleMask & ProtocolZModule33.mask) === ProtocolZModule33.mask)
             {
-                const moduleReader = readModuleReader(reader, 1);
+                const moduleReader = readModuleReader(reader, 1, 'zMod33');
                 report.zMod33 = new ProtocolZModule33(
                     moduleReader.ReadUInt8(),
                     moduleReader.ReadInt8(),
@@ -722,7 +722,7 @@ export class ProtocolYReport
         }
         else if ((moduleMask & ProtocolYSensors.mask) === ProtocolYSensors.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'sensors');
             report.sensors = new ProtocolYSensors();
 
             for (let i = 0; i < 6; i++)
@@ -762,13 +762,13 @@ export class ProtocolYReport
         {
             if ((moduleMask & ProtocolZModule34.mask) === ProtocolZModule34.mask)
             {
-                const moduleReader = readModuleReader(reader, 1);
+                const moduleReader = readModuleReader(reader, 1, 'zMod34');
                 report.zMod34 = new ProtocolZModule34(moduleReader.ReadBytes(38));
             }
         }
         else if ((moduleMask & ProtocolYGoingGreenTheCoreBikeData.mask) === ProtocolYGoingGreenTheCoreBikeData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'goingGreenTheCoreBikeData');
             report.goingGreenTheCoreBikeData = new ProtocolYGoingGreenTheCoreBikeData(
                 moduleReader.ReadUInt16() * 0.0015
             )
@@ -779,7 +779,7 @@ export class ProtocolYReport
         {
             if ((moduleMask & ProtocolZModule35.mask) === ProtocolZModule35.mask)
             {
-                const moduleReader = readModuleReader(reader, 1);
+                const moduleReader = readModuleReader(reader, 1, 'zMod35');
                 report.zMod35 = new ProtocolZModule35(
                     moduleReader.ReadBytes(17).toString('ascii'),
                     moduleReader.ReadBytes(12),
@@ -797,7 +797,7 @@ export class ProtocolYReport
         }
         else if ((moduleMask & ProtocolYEcooterScooterData.mask) === ProtocolYEcooterScooterData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'ecooterScooterData');
             report.ecooterScooterData = new ProtocolYEcooterScooterData(
                 moduleReader.ReadUInt8(),
                 moduleReader.ReadUInt8(),
@@ -813,13 +813,13 @@ export class ProtocolYReport
         {
             if ((moduleMask & ProtocolZModule36.mask) === ProtocolZModule36.mask)
             {
-                const moduleReader = readModuleReader(reader, 1);
+                const moduleReader = readModuleReader(reader, 1, 'zMod36');
                 report.zMod36 = new ProtocolZModule36(moduleReader.ReadBytes(9));
             }
         }
         else if ((moduleMask & ProtocolYTorrotMuviScooterData.mask) === ProtocolYTorrotMuviScooterData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'torrotMuviScooterData');
             report.torrotMuviScooterData = new ProtocolYTorrotMuviScooterData(
                 moduleReader.ReadUInt8(),
                 moduleReader.ReadUInt8(),
@@ -855,7 +855,7 @@ export class ProtocolYReport
         {
             if ((moduleMask & ProtocolZModule37.mask) === ProtocolZModule37.mask)
             {
-                const moduleReader = readModuleReader(reader, 1);
+                const moduleReader = readModuleReader(reader, 1, 'zMod37');
                 report.zMod37 = new ProtocolZModule37(
                     moduleReader.ReadInt8(),
                     moduleReader.ReadInt8(),
@@ -879,7 +879,7 @@ export class ProtocolYReport
         }
         else if ((moduleMask & ProtocolYEcooterSerialNumbers.mask) === ProtocolYEcooterSerialNumbers.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'ecooterSerialNumbers');
             report.ecooterSerialNumbers = new ProtocolYEcooterSerialNumbers(
                 moduleReader.ReadBytes(16).toString('ascii'),
                 moduleReader.ReadBytes(16).toString('ascii')
@@ -891,7 +891,7 @@ export class ProtocolYReport
         {
             if ((moduleMask & ProtocolZModule38.mask) === ProtocolZModule38.mask)
             {
-                const moduleReader = readModuleReader(reader, 1);
+                const moduleReader = readModuleReader(reader, 1, 'zMod38');
                 report.zMod38 = new ProtocolZModule38(
                     moduleReader.ReadBytes(26)
                 )
@@ -899,7 +899,7 @@ export class ProtocolYReport
         }
         else if ((moduleMask & ProtocolYAskollEs2ScooterData.mask) === ProtocolYAskollEs2ScooterData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'askollEs2ScooterData');
             let julianSecs = moduleReader.ReadUInt32();
             let timestamp = moment.utc('1980-01-06T00:00:00').add(julianSecs, 'seconds');
             report.askollEs2ScooterData = new ProtocolYAskollEs2ScooterData(
@@ -931,7 +931,7 @@ export class ProtocolYReport
         {
             if ((moduleMask & ProtocolZModule39.mask) === ProtocolZModule39.mask)
             {
-                const moduleReader = readModuleReader(reader, 1);
+                const moduleReader = readModuleReader(reader, 1, 'zMod39');
                 report.zMod39 = new ProtocolZModule39(
                     moduleReader.ReadBytes(71)
                 );
@@ -939,7 +939,7 @@ export class ProtocolYReport
         }
         else if ((moduleMask & ProtocolYCashInTransitStatus.mask) === ProtocolYCashInTransitStatus.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'cashInTransitStatus');
             report.cashInTransitStatus = new ProtocolYCashInTransitStatus(
                 moduleReader.ReadUInt8(),
                 moduleReader.ReadBytes(5)
@@ -949,7 +949,7 @@ export class ProtocolYReport
         // TORROT MUVI BATTERY DATA
         if ((moduleMask & ProtocolYTorrotMuviBatteryData.mask) === ProtocolYTorrotMuviBatteryData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'torrotMuviBatteryData');
             report.torrotMuviBatteryData = new ProtocolYTorrotMuviBatteryData(
                 moduleReader.ReadBytes(13).toString('ascii'),
                 moduleReader.ReadBytes(13).toString('ascii'),
@@ -965,14 +965,14 @@ export class ProtocolYReport
         // BATTERY USAGE STATISTICS - removed in Protocol Y
         if ((moduleMask & ProtocolYBatteryUsageStatistics.mask) === ProtocolYBatteryUsageStatistics.mask)
         {
-            readModuleReader(reader, 1);
+            readModuleReader(reader, 1, 'BATTERY USAGE STATISTICS');
             // Do not read bytes here for Protocol Y new format.
         }
 
         // STARS ACIM MOTOR CONTROLLER DATA
         if ((moduleMask & ProtocolYStarsAcimMotorControllerData.mask) === ProtocolYStarsAcimMotorControllerData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'starsAcimMotorControllerData');
             report.starsAcimMotorControllerData = new ProtocolYStarsAcimMotorControllerData(
                 moduleReader.ReadInt16(),
                 moduleReader.ReadInt16(),
@@ -1001,7 +1001,7 @@ export class ProtocolYReport
         // "CAR2" DATA
         if ((moduleMask & ProtocolYCar2Data.mask) === ProtocolYCar2Data.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'car2Data');
             report.car2Data = new ProtocolYCar2Data(
                 moduleReader.ReadUInt16(),
                 moduleReader.ReadUInt8(),
@@ -1018,7 +1018,7 @@ export class ProtocolYReport
         // HGV TRAILER DATA
         if ((moduleMask & ProtocolYHgvTrailerData.mask) === ProtocolYHgvTrailerData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'HGV TRAILER DATA');
             const julianSecs = moduleReader.ReadUInt32();
             const canEventDateTime = moment
                 .tz('1980-01-06T00:00:00', 'UTC')
@@ -1093,7 +1093,7 @@ export class ProtocolYReport
         // BEACONS (formerly CM2010 MOBILITY SCOOTER CONTROLLER)
         if ((moduleMask & ProtocolYBeacons.mask) === ProtocolYBeacons.mask)
         {
-            const moduleReader = readModuleReader(reader, 2);
+            const moduleReader = readModuleReader(reader, 2, 'BEACONS (formerly CM2010 MOBILITY SCOOTER CONTROLLER)');
             const beacons = new ProtocolYBeacons();
             beacons.beacons = [];
              // skip reserved bytes
@@ -1129,7 +1129,7 @@ export class ProtocolYReport
         // ASTRA GENERIC CAN DATA
         if ((moduleMask & ProtocolYAstraGenericCanData.mask) === ProtocolYAstraGenericCanData.mask)
         {
-            const { moduleReader, bodyLength } = readModule(reader, 2);
+            const { moduleReader, bodyLength } = readModule(reader, 2, 'ASTRA GENERIC CAN DATA');
 
             if (bodyLength >= 4)
             {
@@ -1161,7 +1161,7 @@ export class ProtocolYReport
         // HEINZMANN ED-DISPLAY
         if ((moduleMask & ProtocolYHeinzmannData.mask) === ProtocolYHeinzmannData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1);
+            const moduleReader = readModuleReader(reader, 1, 'heinzmannData');
             report.heinzmannData = new ProtocolYHeinzmannData(
                 moduleReader.ReadUInt8(),
                 (moduleReader.ReadUInt16() / 1000),

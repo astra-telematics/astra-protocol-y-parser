@@ -24,16 +24,19 @@ export function readU32BE (reader: any)
 
 export function readModule (
     reader: BinaryReader,
-    byteCountBytes: 1 | 2 = 1
+    byteCountBytes: 1 | 2 = 1,
+    moduleName?: string
 ): { moduleReader: BinaryReader, moduleByteCount: number, bodyLength: number }
 {
+    const byteOffset = reader.Position;
     const moduleByteCount = byteCountBytes === 2
         ? reader.ReadUInt16()
         : reader.ReadUInt8();
 
     if (moduleByteCount < byteCountBytes)
     {
-        throw new Error(`Invalid module byte count: ${moduleByteCount}`);
+        const label = moduleName ? `${moduleName}, ` : '';
+        throw new Error(`Invalid module byte count: ${moduleByteCount} (${label}byte offset ${byteOffset})`);
     }
 
     const bodyLength = moduleByteCount - byteCountBytes;
@@ -45,7 +48,7 @@ export function readModule (
         bodyLength
     };
 }
-export function readModuleReader (reader: any, byteCountBytes: 1 | 2 = 1): BinaryReader
+export function readModuleReader (reader: any, byteCountBytes: 1 | 2 = 1, moduleName?: string): BinaryReader
 {
-    return readModule(reader, byteCountBytes).moduleReader;
+    return readModule(reader, byteCountBytes, moduleName).moduleReader;
 }
