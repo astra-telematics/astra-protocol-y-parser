@@ -199,13 +199,22 @@ export class ProtocolYReport
         // GPS DATA
         if ((moduleMask & ProtocolYGpsData.mask) === ProtocolYGpsData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1, 'gpsData');
+            const { moduleReader, bodyLength } = readModule(reader, 1, 'gpsData');
+
+            // Older firmware sends speed/max speed as uint8 at 2km/h/bit (21 byte body).
+            // Newer firmware sends them as uint16 at 0.01km/h/bit (23 byte body).
+            // Support for both added on 20/10/2026.
+            // TODO: Consider removing support for older firmware in the future
+            const readSpeed = bodyLength >= 23
+                ? () => moduleReader.ReadUInt16() / 100
+                : () => moduleReader.ReadUInt8() * 2;
+
             report.rawGpsTimeDateLastKnownGood = moduleReader.ReadUInt32();
             report.gpsData = new ProtocolYGpsData(
                 moduleReader.ReadInt32() / 1000000,
                 moduleReader.ReadInt32() / 1000000,
-                moduleReader.ReadUInt8() * 2,
-                moduleReader.ReadUInt8() * 2,
+                readSpeed(),                        // speed
+                readSpeed(),                        // max speed
                 moduleReader.ReadUInt8() * 2,
                 moduleReader.ReadUInt8() * 20,
                 moduleReader.ReadUInt16() / 10,
