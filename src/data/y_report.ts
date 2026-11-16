@@ -63,6 +63,63 @@ import { ProtocolYDriverAlcoholTestData } from "./modules/y_driver_alcohol_test_
 
 import {BinaryReader} from 'binutils64';
 
+// Mask bits with a decode block in ProtocolYReport.fromReader (bits 31-38 are decoded for both Protocol Y and Z).
+// Modules are framed back to back in ascending bit order; any other bit present is skipped using its length field.
+// When adding a decode block for a new module, add its bit here too.
+const DECODABLE_MODULE_BITS: number[] = [
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+    25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47
+];
+
+// Mask bits whose module starts with a 2-byte length field; every other module (including unknown ones) is assumed
+// to start with a 1-byte length field.
+const TWO_BYTE_LENGTH_MODULE_BITS: number[] = [44, 45, 47];
+
+/** Mask bits set in a module mask, in ascending order. */
+function setModuleBits (moduleMask: bigint): number[]
+{
+    const bits: number[] = [];
+    for (let bit = 0; bit < 80; bit++)
+    {
+        if (((moduleMask >> BigInt(bit)) & BigInt(1)) === BigInt(1)) bits.push(bit);
+    }
+    return bits;
+}
+
+/** Reads one whole module (length field included) without decoding it. */
+function readModuleFrame (reader: BinaryReader, bit: number): Buffer
+{
+    const byteOffset = reader.Position;
+    const lengthFieldBytes = TWO_BYTE_LENGTH_MODULE_BITS.indexOf(bit) >= 0 ? 2 : 1;
+    const lengthField: Buffer = reader.ReadBytes(lengthFieldBytes);
+    if (lengthField.length !== lengthFieldBytes)
+    {
+        throw new Error(`Module exceeds the packet: no length field (mask bit ${bit}, byte offset ${byteOffset})`);
+    }
+
+    const byteCount = lengthFieldBytes === 2 ? lengthField.readUInt16BE(0) : lengthField.readUInt8(0);
+    // The ASTRA GENERIC DEBUG DATA decoder (bit 47) treats its byte count as excluding its own length field
+    const frameLength = bit === 47 ? byteCount + lengthFieldBytes : byteCount;
+    if (frameLength < lengthFieldBytes)
+    {
+        throw new Error(`Invalid module byte count: ${byteCount} (mask bit ${bit}, byte offset ${byteOffset})`);
+    }
+
+    const body: Buffer = reader.ReadBytes(frameLength - lengthFieldBytes);
+    if (body.length !== frameLength - lengthFieldBytes)
+    {
+        throw new Error(`Module exceeds the packet: ${byteCount} bytes declared (mask bit ${bit}, byte offset ${byteOffset})`);
+    }
+
+    return Buffer.concat([lengthField, body]);
+}
+
+/** Reads a 4-byte CAN event timestamp (seconds since the GPS epoch, 1980-01-06 UTC). */
+function readCanEventDateTime (moduleReader: any): moment.Moment
+{
+    return moment.tz('1980-01-06T00:00:00', 'UTC').add(moduleReader.ReadUInt32(), 'seconds');
+}
+
 export class ProtocolYReport
 {
     public timestamp?: moment.Moment;
@@ -71,6 +128,15 @@ export class ProtocolYReport
     public statusFlags?: number;
     public status?: ProtocolYReportStatus;
     public rawModuleMask: bigint;
+    /** decoding stopped at the first unknown module (only when parsed with skipUnknownModules false) */
+    public framingIncomplete?: boolean;
+    /**
+     * mask bits present but not decoded: the unknown modules that were skipped or, when framingIncomplete,
+     * the first unknown bit and every bit after it
+     */
+    public undecodedModuleBits?: number[];
+    /** mask bits this decoder can frame */
+    static decodableModuleBits: number[] = DECODABLE_MODULE_BITS;
     public rawRtcTime: number;
     public rawReasonFlags: bigint;
     public rawStatusFlags: number;
@@ -132,7 +198,12 @@ export class ProtocolYReport
     
     constructor(){}
 
-    static fromReader (reader: BinaryReader, loginData?: ProtocolYLoginData): ProtocolYReport
+    /**
+     * @param skipUnknownModules true: skip modules without a decoder using their length field and decode the rest.
+     * false: decode only the modules before the first unknown one and set framingIncomplete (the end of the report
+     * is then unknown).
+     */
+    static fromReader (reader: BinaryReader, loginData?: ProtocolYLoginData, skipUnknownModules: boolean = true): ProtocolYReport
     {
         let report = new ProtocolYReport();
 
@@ -145,6 +216,17 @@ export class ProtocolYReport
             if (i !== 9) moduleMask <<= BigInt(8);
         }
         report.rawModuleMask = moduleMask;
+
+        const presentModuleBits = setModuleBits(moduleMask);
+        const unknownModuleBits = presentModuleBits.filter((bit) => DECODABLE_MODULE_BITS.indexOf(bit) < 0);
+        if (unknownModuleBits.length > 0 && !skipUnknownModules)
+        {
+            // decode only the modules before the first unknown one; record every bit that is not decoded
+            const firstUnknownModuleBit = unknownModuleBits[0];
+            report.framingIncomplete = true;
+            report.undecodedModuleBits = presentModuleBits.filter((bit) => bit >= firstUnknownModuleBit);
+            moduleMask &= (BigInt(1) << BigInt(firstUnknownModuleBit)) - BigInt(1);
+        }
 
         let julianSecs = reader.ReadUInt32();
         report.rawRtcTime = julianSecs;
@@ -185,6 +267,26 @@ export class ProtocolYReport
         report.status.gpsJammerDetected = (report.statusFlags! & 0x100) === 1;
         report.status.luggageCompartmentUnlocked = (report.statusFlags! & 0x200) === 0;
         report.status.backupBatteryCharging = (report.statusFlags! & 0x400) === 1;
+
+        // Skip unknown modules: frame every module by its length field, then decode the known ones from a reader
+        // holding only their bytes
+        let knownModulesLength = -1;
+        if (unknownModuleBits.length > 0 && skipUnknownModules)
+        {
+            const knownModuleFrames: Buffer[] = [];
+            for (const bit of presentModuleBits)
+            {
+                const frame = readModuleFrame(reader, bit);
+                if (DECODABLE_MODULE_BITS.indexOf(bit) >= 0) knownModuleFrames.push(frame);
+            }
+
+            report.undecodedModuleBits = unknownModuleBits;
+            for (const bit of unknownModuleBits) moduleMask &= ~(BigInt(1) << BigInt(bit));
+
+            const knownModules = Buffer.concat(knownModuleFrames);
+            knownModulesLength = knownModules.length;
+            reader = new BinaryReader(knownModules);
+        }
 
         // DEVICE POWER
         if ((moduleMask & ProtocolYDevicePower.mask) === ProtocolYDevicePower.mask)
@@ -247,16 +349,33 @@ export class ProtocolYReport
         // DRIVER BEHAVIOUR
         if ((moduleMask & ProtocolYDriverBehaviour.mask) === ProtocolYDriverBehaviour.mask)
         {
-            const moduleReader = readModuleReader(reader, 1, 'driverBehaviour');
-            report.driverBehaviour = new ProtocolYDriverBehaviour(
-                moduleReader.ReadUInt8() / 10,
-                moduleReader.ReadUInt8() / 10,
-                moduleReader.ReadUInt8() / 10,
-                moduleReader.ReadUInt8() / 10,
-                moduleReader.ReadUInt8() / 10,
-                moduleReader.ReadUInt8() / 10,
-                moduleReader.ReadUInt16()
-            )
+            const { moduleReader, bodyLength } = readModule(reader, 1, 'driverBehaviour');
+            if (bodyLength >= 14)
+            {
+                // Protocol Y 2.4: six signed 16-bit big-endian accelerations (raw / 10 m/s^2) + uint16 idle time
+                report.driverBehaviour = new ProtocolYDriverBehaviour(
+                    moduleReader.ReadInt16() / 10,
+                    moduleReader.ReadInt16() / 10,
+                    moduleReader.ReadInt16() / 10,
+                    moduleReader.ReadInt16() / 10,
+                    moduleReader.ReadInt16() / 10,
+                    moduleReader.ReadInt16() / 10,
+                    moduleReader.ReadUInt16()
+                )
+            }
+            else
+            {
+                // Legacy (pre 2.4) 8-byte body: six unsigned 8-bit accelerations (raw / 10) + uint16 idle time
+                report.driverBehaviour = new ProtocolYDriverBehaviour(
+                    moduleReader.ReadUInt8() / 10,
+                    moduleReader.ReadUInt8() / 10,
+                    moduleReader.ReadUInt8() / 10,
+                    moduleReader.ReadUInt8() / 10,
+                    moduleReader.ReadUInt8() / 10,
+                    moduleReader.ReadUInt8() / 10,
+                    moduleReader.ReadUInt16()
+                )
+            }
         }
 
         // TPMS
@@ -341,9 +460,11 @@ export class ProtocolYReport
         // FMS JOURNEY-START DATA
         if ((moduleMask & ProtocolYFmsJourneyStartData.mask) === ProtocolYFmsJourneyStartData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1, 'fmsJourneyStartData');
+            const { moduleReader, bodyLength } = readModule(reader, 1, 'fmsJourneyStartData');
+            const canEventDateTime = bodyLength >= 2 + 4 ? readCanEventDateTime(moduleReader) : undefined;
             report.fmsJourneyStartData = new ProtocolYFmsJourneyStartData(
-                moduleReader.ReadUInt16()
+                moduleReader.ReadUInt16(),
+                canEventDateTime
             )
         }
 
@@ -366,7 +487,8 @@ export class ProtocolYReport
         // FMS IN-JOURNEY DATA
         if ((moduleMask & ProtocolYFmsInJourneyData.mask) === ProtocolYFmsInJourneyData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1, 'fmsInJourneyData');
+            const { moduleReader, bodyLength } = readModule(reader, 1, 'fmsInJourneyData');
+            const canEventDateTime = bodyLength >= 20 + 4 ? readCanEventDateTime(moduleReader) : undefined;
             report.fmsInJourneyData = new ProtocolYFmsInJourneyData(
                 moduleReader.ReadUInt8(),
                 moduleReader.ReadUInt8(),
@@ -381,14 +503,16 @@ export class ProtocolYReport
                 moduleReader.ReadUInt16(),
                 moduleReader.ReadUInt16(),
                 moduleReader.ReadUInt8(),
-                moduleReader.ReadUInt32() / 1000
+                moduleReader.ReadUInt32() / 1000,
+                canEventDateTime
             )
         }
 
         // OBD IN-JOURNEY DATA
         if ((moduleMask & ProtocolYObdInJourneyData.mask) === ProtocolYObdInJourneyData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1, 'obdInJourneyData');
+            const { moduleReader, bodyLength } = readModule(reader, 1, 'obdInJourneyData');
+            const canEventDateTime = bodyLength >= 18 + 4 ? readCanEventDateTime(moduleReader) : undefined;
             report.obdInJourneyData = new ProtocolYObdInJourneyData(
                 moduleReader.ReadUInt8(),
                 moduleReader.ReadUInt8(),
@@ -403,7 +527,8 @@ export class ProtocolYReport
                 moduleReader.ReadUInt16(),
                 moduleReader.ReadUInt16(),
                 moduleReader.ReadUInt8(),
-                moduleReader.ReadUInt16() / 10
+                moduleReader.ReadUInt16() / 10,
+                canEventDateTime
             )
         }
 
@@ -423,7 +548,8 @@ export class ProtocolYReport
         // FMS JOURNEY-STOP DATA
         if ((moduleMask & ProtocolYFmsJourneyStopData.mask) === ProtocolYFmsJourneyStopData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1, 'FMS JOURNEY-STOP DATA');
+            const { moduleReader, bodyLength } = readModule(reader, 1, 'FMS JOURNEY-STOP DATA');
+            const canEventDateTime = bodyLength >= 13 + 4 ? readCanEventDateTime(moduleReader) : undefined;
             let lifetimeOdoKm = moduleReader.ReadUInt8();
             lifetimeOdoKm <<= 8;
             lifetimeOdoKm |= moduleReader.ReadUInt8();
@@ -436,14 +562,16 @@ export class ProtocolYReport
                 moduleReader.ReadUInt16(),
                 moduleReader.ReadUInt16() / 10,
                 moduleReader.ReadUInt16(),
-                moduleReader.ReadUInt16() * 5
+                moduleReader.ReadUInt16() * 5,
+                canEventDateTime
             )
         }
 
         // OBD JOURNEY-STOP DATA
         if ((moduleMask & ProtocolYObdJourneyStopData.mask) === ProtocolYObdJourneyStopData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1, 'OBD JOURNEY-STOP DATA');
+            const { moduleReader, bodyLength } = readModule(reader, 1, 'OBD JOURNEY-STOP DATA');
+            const canEventDateTime = bodyLength >= 9 + 4 ? readCanEventDateTime(moduleReader) : undefined;
             let lifetimeOdoKm = moduleReader.ReadUInt8();
             lifetimeOdoKm <<= 8;
             lifetimeOdoKm |= moduleReader.ReadUInt8();
@@ -454,7 +582,8 @@ export class ProtocolYReport
                 lifetimeOdoKm,
                 moduleReader.ReadUInt16(),
                 moduleReader.ReadUInt16(),
-                moduleReader.ReadUInt16()
+                moduleReader.ReadUInt16(),
+                canEventDateTime
             )
         }
 
@@ -1027,11 +1156,8 @@ export class ProtocolYReport
         // HGV TRAILER DATA
         if ((moduleMask & ProtocolYHgvTrailerData.mask) === ProtocolYHgvTrailerData.mask)
         {
-            const moduleReader = readModuleReader(reader, 1, 'HGV TRAILER DATA');
-            const julianSecs = moduleReader.ReadUInt32();
-            const canEventDateTime = moment
-                .tz('1980-01-06T00:00:00', 'UTC')
-                .add(julianSecs, 'seconds');
+            const { moduleReader, moduleByteCount } = readModule(reader, 1, 'HGV TRAILER DATA');
+            const canEventDateTime = readCanEventDateTime(moduleReader);
 
             const rawFlags = moduleReader.ReadUInt16();
 
@@ -1051,6 +1177,13 @@ export class ProtocolYReport
             const brakingEfficiencyCompensatedPercent = rawBrakingEfficiencyCompensatedPercent !== 0xFF ? rawBrakingEfficiencyCompensatedPercent : undefined;
 
             const wheelCount = moduleReader.ReadUInt8();
+
+            // Module 44 is 26 + 4 * wheelCount bytes including its count byte
+            if (moduleByteCount !== 26 + 4 * wheelCount)
+            {
+                throw new Error(`Invalid HGV TRAILER DATA module byte count: ${moduleByteCount} (expected ${26 + 4 * wheelCount} for ${wheelCount} wheels)`);
+            }
+
             const wheels: ProtocolYHgvTrailerWheelData[] = [];
 
             if (wheelCount > 0 && wheelCount < 20)
@@ -1215,6 +1348,12 @@ export class ProtocolYReport
                     }
                     break;
             }
+        }
+
+        // When unknown modules were skipped the decoders must use exactly the known modules' bytes
+        if (knownModulesLength >= 0 && reader.Position !== knownModulesLength)
+        {
+            throw new Error(`Module bytes do not line up after skipping unknown modules [${unknownModuleBits.join(',')}]`);
         }
 
         return report;

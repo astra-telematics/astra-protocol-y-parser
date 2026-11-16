@@ -1,7 +1,10 @@
+import * as moment from "moment-timezone";
+
 export class ProtocolYObdInJourneyData
 {
     static mask: bigint = BigInt(1) << BigInt(13);
 
+    public canEventDateTime?: moment.Moment;
     public maxWheelBasedSpeedKmh: number;
     public averageWheelBasedSpeedKmh: number;
     public maxEngineRpm: number;
@@ -31,7 +34,8 @@ export class ProtocolYObdInJourneyData
         obdStatusMask: number,
         obdEventsMask: number,
         fuelLevelRaw: number,
-        journeyFuelUsedL: number
+        journeyFuelUsedL: number,
+        canEventDateTime?: moment.Moment
     )
     {
         this.maxWheelBasedSpeedKmh = maxWheelBasedSpeedKmh;
@@ -48,5 +52,6 @@ export class ProtocolYObdInJourneyData
         this.obdEventsMask = obdEventsMask;
         this.fuelLevelRaw = fuelLevelRaw;
         this.journeyFuelUsedL = journeyFuelUsedL;
+        this.canEventDateTime = canEventDateTime;
     }
 }

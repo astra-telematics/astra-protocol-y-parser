@@ -42,6 +42,12 @@ export function readModule (
     const bodyLength = moduleByteCount - byteCountBytes;
     const body = reader.ReadBytes(bodyLength);
 
+    if (body.length !== bodyLength)
+    {
+        const label = moduleName ? `${moduleName}, ` : '';
+        throw new Error(`Module exceeds the packet: ${moduleByteCount} bytes declared (${label}byte offset ${byteOffset})`);
+    }
+
     return {
         moduleReader: new BinaryReader(body),
         moduleByteCount,
