@@ -44,6 +44,11 @@ Protocol Y v2.3 changes the report header layout and several data modules.
 - **Module 44**
   - Replaced with **HGV Trailer Data**
 
+- **Module 30 – Generator Data** (replaces the removed FMS In-Journey High-res module)
+  - Oil pressure (kPa), oil and coolant temperature (°C), fuel and DEF level (%)
+  - Alternator and battery voltage (0.1 V/bit), engine speed (RPM), engine runtime (s)
+  - Generator L-N voltage average (0.1 V/bit) and current average (0.1 A/bit)
+
 ## Supports data modules
 
 - [x] Device Power
@@ -76,7 +81,8 @@ Protocol Y v2.3 changes the report header layout and several data modules.
 - [x] SIM Card Subscriber ID
 - [x] SIM Card Serial Number
 - [x] FMS Driver ID
-- [x] FMS In-Journey High-res
+- [ ] FMS In-Journey High-res REMOVED (bit reused for Generator Data)
+- [x] Generator Data
 - [x] FMS Driver Working States
 - [x] Segway Ninebot ES4 Sharing
 - [x] Temperature + Humidity Sensors

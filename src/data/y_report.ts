@@ -19,7 +19,7 @@ import { ProtocolYEcooterSerialNumbers } from "./modules/y_ecooter_serial_number
 import { ProtocolYFmsDriverId } from "./modules/y_fms_driver_id";
 import { ProtocolYFmsDriverWorkingStates } from "./modules/y_fms_driver_working_states";
 import { ProtocolYFmsInJourneyData } from "./modules/y_fms_in_journey_data";
-import { ProtocolYFmsInJourneyHighRes } from "./modules/y_fms_in_journey_high_res";
+import { ProtocolYGeneratorData } from "./modules/y_generator_data";
 import { ProtocolYFmsJourneyStartData } from "./modules/y_fms_journey_start_data";
 import { ProtocolYFmsJourneyStopData } from "./modules/y_fms_journey_stop_data";
 import { ProtocolYGeofences } from "./modules/y_geofences";
@@ -171,6 +171,7 @@ export class ProtocolYReport
     public simSubscriberId?: ProtocolYSimSubscriberId;
     public simCardSerialNumber?: ProtocolYSimCardSerialNumber;
     public fmsDriverId?: ProtocolYFmsDriverId;
+    public generatorData?: ProtocolYGeneratorData;
     public fmsDriverWorkingStates?: ProtocolYFmsDriverWorkingStates;
     public segwayNinebotEs4Sharing?: ProtocolYSegwayNinebotEs4Sharing;
     public sensors?: ProtocolYSensors;
@@ -762,11 +763,27 @@ export class ProtocolYReport
             )
         }
 
-        // FMS IN-JOURNEY HIGH-RES  - removed in Protocol Y
-        if ((moduleMask & ProtocolYFmsInJourneyHighRes.mask) === ProtocolYFmsInJourneyHighRes.mask)
+        // GENERATOR DATA (module 30; replaces the removed FMS IN-JOURNEY HIGH-RES module on this bit)
+        if ((moduleMask & ProtocolYGeneratorData.mask) === ProtocolYGeneratorData.mask)
         {
-            readModuleReader(reader, 1, 'FMS IN-JOURNEY HIGH-RES');
-            // Do not read bytes here for Protocol Y new format.
+            const { moduleReader, bodyLength } = readModule(reader, 1, 'generatorData');
+            // Older firmware may still send the removed high-res module here: only decode a full generator body
+            if (loginData?.protocolId !== 'Z' && bodyLength >= 26)
+            {
+                report.generatorData = new ProtocolYGeneratorData(
+                    moduleReader.ReadUInt16(),
+                    moduleReader.ReadInt16(),
+                    moduleReader.ReadInt16(),
+                    moduleReader.ReadUInt8(),
+                    moduleReader.ReadUInt8(),
+                    moduleReader.ReadUInt16() / 10,
+                    moduleReader.ReadUInt16() / 10,
+                    moduleReader.ReadUInt16(),
+                    moduleReader.ReadUInt32(),
+                    moduleReader.ReadUInt32() / 10,
+                    moduleReader.ReadUInt32() / 10
+                );
+            }
         }
 
         // FMS DRIVER WORKING STATES
