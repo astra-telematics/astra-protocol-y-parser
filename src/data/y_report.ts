@@ -770,18 +770,24 @@ export class ProtocolYReport
             // Older firmware may still send the removed high-res module here: only decode a full generator body
             if (loginData?.protocolId !== 'Z' && bodyLength >= 26)
             {
+                // Unavailable values are the top 8 of each field's range (e.g. 0xFFF8-0xFFFF; 0x7FF8-0x7FFF when signed)
+                const u8 = (scale = 1) => { const v = moduleReader.ReadUInt8(); return v < 0xF8 ? v / scale : undefined; };
+                const u16 = (scale = 1) => { const v = moduleReader.ReadUInt16(); return v < 0xFFF8 ? v / scale : undefined; };
+                const i16 = () => { const v = moduleReader.ReadInt16(); return v < 0x7FF8 ? v : undefined; };
+                const u32 = (scale = 1) => { const v = moduleReader.ReadUInt32(); return v < 0xFFFFFFF8 ? v / scale : undefined; };
+
                 report.generatorData = new ProtocolYGeneratorData(
-                    moduleReader.ReadUInt16(),
-                    moduleReader.ReadInt16(),
-                    moduleReader.ReadInt16(),
-                    moduleReader.ReadUInt8(),
-                    moduleReader.ReadUInt8(),
-                    moduleReader.ReadUInt16() / 10,
-                    moduleReader.ReadUInt16() / 10,
-                    moduleReader.ReadUInt16(),
-                    moduleReader.ReadUInt32(),
-                    moduleReader.ReadUInt32() / 10,
-                    moduleReader.ReadUInt32() / 10
+                    u16(),
+                    i16(),
+                    i16(),
+                    u8(),
+                    u8(),
+                    u16(10),
+                    u16(10),
+                    u16(),
+                    u32(),
+                    u32(10),
+                    u32(10)
                 );
             }
         }
